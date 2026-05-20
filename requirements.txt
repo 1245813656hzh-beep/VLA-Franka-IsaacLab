@@ -1,0 +1,43 @@
+# ============================================================
+# Base requirements (all environments)
+# ============================================================
+numpy>=1.20.0
+h5py>=3.0.0
+torch>=2.0.0
+gymnasium>=0.28.0,<1.3.0
+tqdm>=4.60.0
+opencv-python>=4.8.0
+msgpack>=1.0.0
+pyzmq>=25.0.0
+matplotlib>=3.5.0
+pandas>=1.3.0
+
+# ============================================================
+# IsaacLab environment (isaac)
+# Install Isaac Sim first, then:
+#   pip install -r requirements-isaac.txt
+# ============================================================
+# isaaclab>=0.48.5
+# isaaclab-tasks>=0.11.8
+# isaaclab-assets>=0.2.3
+# isaaclab-mimic>=1.0.15
+# lerobot==0.4.4
+# transformers>=4.40.0
+
+# ============================================================
+# GR00T inference server (isaac_gr00t)
+# Install GR00T from source, then:
+#   pip install -r requirements-gr00t.txt
+# ============================================================
+# transformers>=4.45.0,<4.52.0
+# torch>=2.0.0
+# torchvision>=0.15.0
+# numpy>=1.24.0,<2.0.0
+
+# ============================================================
+# Training environment (lerobot)
+#   pip install -r requirements-train.txt
+# ============================================================
+# lerobot==0.4.4
+# torch>=2.0.0
+# torchvision>=0.15.0

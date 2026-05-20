@@ -1,0 +1,29 @@
+# GR00T-N1.5 inference configuration for Franka place-bin task
+# Usage:
+#   python scripts/inference/inference_gr00t_isaaclab.py \
+#       --model_path ./pretrained_models/gr00t_place_bin \
+#       --task_description "pick up the green cube and place it into the blue bin"
+
+model:
+  path: "./pretrained_models/gr00t_place_bin"
+  data_config: "gr00t.config.franka_config:FrankaDataConfig"
+  embodiment_tag: "new_embodiment"
+  denoising_steps: 4
+
+env:
+  task: "Isaac-Place-Bin-Franka-IK-Rel-v0"
+  num_envs: 1
+  episode_length: 250
+  seed: 1000
+
+inference:
+  device: "cuda"
+  save_video: true
+  output_dir: "./outputs"
+  headless: false
+
+task_descriptions:
+  green_cube: "pick up the green cube and place it into the blue bin"
+  red_cube: "pick up the red cube and place it into the blue bin"
+  blue_cube: "pick up the blue cube and place it into the blue bin"
+  stack_all: "pick up the blue, red and green cubes in order and stack them in the blue bin"

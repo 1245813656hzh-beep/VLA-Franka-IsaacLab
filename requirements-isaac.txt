@@ -1,0 +1,29 @@
+# Requirements for IsaacLab simulation environment
+# 
+# Prerequisites:
+#   1. Install NVIDIA Isaac Sim 4.2+ (https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html)
+#   2. Install IsaacLab (https://github.com/isaac-sim/IsaacLab)
+#   3. Then install these Python packages in your isaac environment
+#
+#   conda activate isaac
+#   pip install -r requirements-isaac.txt
+
+# IsaacLab ecosystem (install via IsaacLab's setup, or pip if available)
+isaaclab>=0.48.5
+isaaclab-tasks>=0.11.8
+isaaclab-assets>=0.2.3
+isaaclab-mimic>=1.0.15
+isaaclab-rl>=0.4.4
+
+# Dataset & VLA
+gymnasium>=1.2.0,<1.3.0
+lerobot==0.4.4
+transformers>=4.40.0
+
+# Visualization & video
+torchcodec>=0.10.0
+torchdiffeq>=0.2.0
+
+# Utilities
+numpy>=1.24.0,<2.0.0
+opencv-python>=4.8.0

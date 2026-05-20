@@ -1,0 +1,25 @@
+# ACT inference configuration for Franka place-bin task
+# Usage:
+#   python scripts/inference/inference_act_isaaclab.py \
+#       --model_path ./pretrained_models/act_place_bin \
+#       --dataset_path ./datasets/lerobot/auto_collected
+
+model:
+  path: "./pretrained_models/act_place_bin"
+
+dataset:
+  path: "./datasets/lerobot/auto_collected"
+  # Normalization stats (mean/std) will be loaded from dataset/meta/stats.json
+
+env:
+  task: "Isaac-Place-Bin-Franka-IK-Rel-v0"
+  num_envs: 1
+  episode_length: 300
+  seed: 1000
+
+inference:
+  device: "cuda"
+  save_video: true
+  output_dir: "./outputs"
+  headless: false
+  n_action_steps: 100

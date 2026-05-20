@@ -1,0 +1,26 @@
+# Requirements for GR00T-N1.5 inference server
+#
+# Prerequisites:
+#   1. Install GR00T-N1.5 from NVIDIA source:
+#      git clone https://github.com/NVIDIA/GR00T.git
+#      cd GR00T && pip install -e .
+#
+#   2. Then install these additional packages:
+#      conda activate isaac_gr00t
+#      pip install -r requirements-gr00t.txt
+
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.45.0,<4.52.0
+numpy>=1.24.0,<2.0.0
+gymnasium>=1.0.0,<1.3.0
+opencv-python>=4.8.0
+msgpack>=1.0.0
+pyzmq>=25.0.0
+
+# GR00T dependencies (installed with GR00T source)
+# - flash-attn (may need pre-compiled wheel)
+# - einops
+# - timm
+# - decord
+# - av
