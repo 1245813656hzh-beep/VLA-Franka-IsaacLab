@@ -3,150 +3,133 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-基于 [Isaac Sim](https://developer.nvidia.com/isaac-sim) / [IsaacLab](https://github.com/isaac-sim/IsaacLab) 的 VLA (Vision-Language-Action) 机械臂仿真部署工具链，支持 Franka 机器人在仿真环境中的**自动化数据采集**与**VLA 模型推理**。
+**English** | [中文](README.zh.md)
+
+A VLA (Vision-Language-Action) data collection and inference toolkit for the Franka robot on [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim) / [IsaacLab](https://github.com/isaac-sim/IsaacLab).
 
 <p align="center">
   <b>Data Collection → Training → Inference</b>
 </p>
 
-## 功能特性
+## Features
 
-- 🤖 **自动化数据采集**
-  - 单方块 Pick-Place 任务自动化采集
-  - 多方块堆叠任务自动化采集
-  - 直接输出 [LeRobot](https://github.com/huggingface/lerobot) v3.0 格式数据集
-  - 内置闭环控制器，自动判断成功率
+- 🤖 **Automated Data Collection**
+  - Single-cube pick-and-place with scripted trajectory generation
+  - Multi-cube stacking in the same scene
+  - Direct LeRobot v3.0 dataset output
+  - Built-in closed-loop controller with success checking
 
-- 🧠 **VLA 模型推理**
-  - 支持 **GR00T-N1.5** (NVIDIA) 本地推理
-  - 支持 **ACT** (Action Chunking Transformer) 本地推理
-  - 支持 **GR00T 远程推理**（ZMQ 服务解耦，避免 CUDA 冲突）
+- 🧠 **VLA Model Inference**
+  - **GR00T-N1.5** (NVIDIA) local inference
+  - **ACT** (Action Chunking Transformer) local inference
+  - **GR00T remote inference** via ZMQ (decouples model server from simulation)
 
-- 🎯 **自定义 IsaacLab 环境**
-  - **Place-Bin**（放方块到篮子）— 核心自定义环境，含三摄像头配置
-  - 多摄像头配置（Table Cam / Side Cam / Wrist Cam）
-  - 支持键盘遥操作
+- 🎯 **Custom IsaacLab Environment**
+  - **Place-Bin** task — place scattered cubes into a blue sorting bin
+  - Multi-camera setup: Table Cam / Side Cam / Wrist Cam
+  - Keyboard teleoperation support
 
-## 环境要求
+## Requirements
 
-| 组件 | 版本 | 说明 |
+| Component | Version | Note |
 |---|---|---|
-| Ubuntu | 22.04 | 必需 |
-| NVIDIA GPU | VRAM >= 12GB | 用于 Isaac Sim + 模型推理 |
-| NVIDIA Driver | >= 535 | CUDA 12.x 需要 |
-| Isaac Sim | 4.2+ | 仿真引擎，需先独立安装 |
-| IsaacLab | >= 0.48.0 | 机器人学习框架 |
-| Python | 3.10 / 3.11 | 3.11 用于 IsaacLab，3.10 用于 GR00T |
-| CUDA | 12.x | 与 Isaac Sim 版本匹配 |
+| Ubuntu | 22.04 | Required |
+| NVIDIA GPU | >= 12 GB VRAM | For Isaac Sim + model inference |
+| NVIDIA Driver | >= 535 | CUDA 12.x required |
+| Isaac Sim | 4.2+ | Simulation engine; install separately |
+| IsaacLab | >= 0.48.0 | Robot learning framework |
+| Python | 3.10 / 3.11 | 3.11 for IsaacLab, 3.10 for GR00T |
+| CUDA | 12.x | Match your Isaac Sim version |
 
-> ⚠️ **版本兼容性警告**：本项目在以下版本组合中验证通过：
+> ⚠️ **Version Compatibility**: This project is validated with:
 > - IsaacLab 0.48.5 + isaaclab-mimic 1.0.15 + isaaclab-tasks 0.11.8
 > - LeRobot 0.4.4
 > - transformers 4.40+ (isaac env), 4.45~4.51 (gr00t env)
 
-## 安装
+## Installation
 
-### 1. 克隆仓库
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/vla-franka-isaaclab.git
-cd vla-franka-isaaclab
+git clone https://github.com/1245813656hzh-beep/VLA-Franka-IsaacLab.git
+cd VLA-Franka-IsaacLab
 ```
 
-### 2. 安装 NVIDIA Isaac Sim
+### 2. Install NVIDIA Isaac Sim
 
-这是最大的前置依赖，**必须先完成**：
+This is the largest prerequisite and **must be done first**:
 
 ```bash
-# 方式一：Omniverse Launcher (推荐)
-# 下载 https://www.nvidia.com/omniverse 并安装 Isaac Sim 4.2+
+# Option 1: Omniverse Launcher (recommended)
+# Download from https://www.nvidia.com/omniverse and install Isaac Sim 4.2+
 
-# 方式二：pip 安装
+# Option 2: pip
 pip install isaacsim==4.2.0 --extra-index-url https://pypi.nvidia.com
 ```
 
-设置环境变量：
+Set the environment variable:
 ```bash
-export ISAACSIM_PATH=/path/to/isaac-sim  # 例如 ~/isaacsim
+export ISAACSIM_PATH=/path/to/isaac-sim  # e.g. ~/isaacsim
 ```
 
-### 3. 安装 IsaacLab
+### 3. Install IsaacLab
 
 ```bash
 git clone https://github.com/isaac-sim/IsaacLab.git
 cd IsaacLab
 ./isaaclab.sh --install
-# 或使用 pip
+# Or via pip:
 pip install isaaclab isaaclab-tasks isaaclab-assets isaaclab-mimic
 ```
 
-### 4. 安装项目依赖
+### 4. Install project dependencies
 
-本项目涉及**多个 conda 环境**（因为依赖冲突）。推荐按功能创建独立环境：
+This project uses **multiple conda environments** due to dependency conflicts. Create them by function:
 
-#### 环境 A — IsaacLab 仿真环境（数据采集 + ACT 推理）
+#### Env A — IsaacLab Simulation (data collection + ACT inference)
 
 ```bash
 conda create -n isaac python=3.11
 conda activate isaac
-
-# 基础依赖
 pip install -e .
-
-# IsaacLab 生态
 pip install -r requirements-isaac.txt
-
-# 验证安装
 python scripts/debug/check_installation.py
 ```
 
-#### 环境 B — GR00T 推理服务
+#### Env B — GR00T Inference Server
 
 ```bash
 conda create -n isaac_gr00t python=3.10
 conda activate isaac_gr00t
-
-# 基础依赖
 pip install -e .
 
-# 安装 GR00T-N1.5（必须从源码）
+# Install GR00T-N1.5 from source
 mkdir -p third_party
 git clone https://github.com/NVIDIA/GR00T.git third_party/GR00T-N1.5
 cd third_party/GR00T-N1.5
 pip install -e .
 
-# GR00T 额外依赖
 pip install -r ../../requirements-gr00t.txt
-
-# 验证
 python -c "import gr00t; print('GR00T OK')"
 ```
 
-#### 环境 C — ACT 训练环境
+#### Env C — ACT Training
 
 ```bash
 conda create -n lerobot python=3.10
 conda activate lerobot
-
-# 基础依赖 + 训练依赖
 pip install -e ".[train]"
 pip install -r requirements-train.txt
-
-# 验证 LeRobot
 python -c "from lerobot.datasets.lerobot_dataset import LeRobotDataset; print('LeRobot OK')"
 ```
 
-> 如果你只有一个环境且没有 GR00T 需求，可以只创建 **环境 A**。
+> If you only need data collection and ACT inference, **Env A alone is sufficient**.
 
-### 4. 注册 IsaacLab 任务
+## Quick Start
 
-确保 IsaacLab 能够找到本项目的自定义任务。在运行脚本时，任务会自动注册到 Gymnasium registry。
+### Automated Data Collection
 
-## 快速开始
-
-### 自动化数据采集
-
-#### 单方块 Pick-Place
+#### Single-cube pick-and-place
 
 ```bash
 python scripts/data_collection/auto_collect_single.py \
@@ -157,13 +140,13 @@ python scripts/data_collection/auto_collect_single.py \
     --target_color green
 ```
 
-参数说明：
-- `--num_episodes`: 采集的成功 episode 数量
-- `--target_color`: 目标方块颜色 (`blue`, `red`, `green`)
-- `--use_videos`: 将图像存储为 mp4（体积更小）
-- `--save_failed`: 同时保存失败的 episode
+Key arguments:
+- `--num_episodes`: target number of successful episodes
+- `--target_color`: target cube color (`blue`, `red`, `green`)
+- `--use_videos`: store images as mp4 (smaller size, recommended)
+- `--save_failed`: also save failed episodes
 
-#### 多方块堆叠
+#### Multi-cube stacking
 
 ```bash
 python scripts/data_collection/auto_collect_stack.py \
@@ -173,11 +156,9 @@ python scripts/data_collection/auto_collect_stack.py \
     --use_videos
 ```
 
-抓取顺序：蓝 → 红 → 绿，自动堆叠到篮子中。
+Pick order: blue → red → green, stacked sequentially into the bin.
 
-### 人工遥操作采集
-
-如果需要人工采集 demonstrations：
+### Human Teleoperation
 
 ```bash
 python scripts/data_collection/record_demos.py \
@@ -187,14 +168,14 @@ python scripts/data_collection/record_demos.py \
     --step_hz 30
 ```
 
-键盘映射：
-- **I/K**: X 轴前后 | **J/L**: Y 轴左右 | **U/O**: Z 轴上下
-- **N/M**: X 旋转 | **T/G**: Y 旋转 | **Y/B**: Z 旋转
-- **P**: 夹爪开关 | **E**: 导出 episode | **R**: 重置
+Keyboard mapping:
+- **I/K**: X forward/back | **J/L**: Y left/right | **U/O**: Z up/down
+- **N/M**: X rotation | **T/G**: Y rotation | **Y/B**: Z rotation
+- **P**: gripper toggle | **E**: export episode | **R**: reset
 
-### 模型训练
+### Model Training
 
-#### ACT 训练（使用 LeRobot）
+#### ACT with LeRobot
 
 ```bash
 python scripts/model_training/train_act_with_lerobot.py \
@@ -205,13 +186,9 @@ python scripts/model_training/train_act_with_lerobot.py \
     --device cuda
 ```
 
-#### GR00T 微调
+### VLA Inference
 
-参考 [GR00T 官方文档](https://github.com/NVIDIA/GR00T) 进行微调。本仓库主要关注推理部署。
-
-### VLA 模型推理
-
-#### GR00T-N1.5 本地推理
+#### GR00T-N1.5 local inference
 
 ```bash
 python scripts/inference/inference_gr00t_isaaclab.py \
@@ -221,7 +198,7 @@ python scripts/inference/inference_gr00t_isaaclab.py \
     --headless
 ```
 
-#### ACT 本地推理
+#### ACT local inference
 
 ```bash
 python scripts/inference/inference_act_isaaclab.py \
@@ -232,29 +209,25 @@ python scripts/inference/inference_act_isaaclab.py \
     --headless
 ```
 
-> ACT 推理需要数据集路径来加载归一化统计量（`meta/stats.json`）。
+> ACT inference requires the dataset path to load normalization stats (`meta/stats.json`).
 
-#### GR00T 远程推理（推荐，避免环境冲突）
+#### GR00T remote inference (recommended)
 
-如果 GR00T 和 IsaacLab 存在 CUDA / 依赖冲突，可使用远程推理架构：
-
-**Terminal 1 - 启动 GR00T 推理服务：**
+**Terminal 1 — Start GR00T server:**
 
 ```bash
-# 在 gr00t 环境中
-conda activate gr00t
+conda activate isaac_gr00t
 cd $GR00T_PATH
 python scripts/inference_service.py \
     --model-path ./pretrained_models/gr00t_place_bin \
     --server --port 5555
 ```
 
-**Terminal 2 - 启动 IsaacLab 客户端：**
+**Terminal 2 — Start IsaacLab client:**
 
 ```bash
-# 在 isaac 环境中
 conda activate isaac
-cd vla-franka-isaaclab
+cd VLA-Franka-IsaacLab
 python scripts/inference/gr00t_remote_client.py \
     --server-host localhost \
     --server-port 5555 \
@@ -262,92 +235,89 @@ python scripts/inference/gr00t_remote_client.py \
     --save_video
 ```
 
-客户端与服务端通过 ZMQ + msgpack 通信，observation 序列化后传输，action 结果返回执行。
-
-## 项目结构
+## Project Structure
 
 ```
-vla-franka-isaaclab/
+VLA-Franka-IsaacLab/
 ├── scripts/
-│   ├── data_collection/          # 数据采集脚本
-│   │   ├── auto_collect_single.py    # 单方块自动采集
-│   │   ├── auto_collect_stack.py     # 堆叠自动采集
-│   │   └── record_demos.py           # 人工遥操作采集
-│   ├── inference/                # 推理脚本
-│   │   ├── inference_gr00t_isaaclab.py   # GR00T 本地推理
-│   │   ├── inference_act_isaaclab.py     # ACT 本地推理
-│   │   └── gr00t_remote_client.py        # GR00T 远程客户端
-│   ├── model_training/           # 训练脚本
+│   ├── data_collection/
+│   │   ├── auto_collect_single.py
+│   │   ├── auto_collect_stack.py
+│   │   └── record_demos.py
+│   ├── inference/
+│   │   ├── inference_gr00t_isaaclab.py
+│   │   ├── inference_act_isaaclab.py
+│   │   ├── gr00t_remote_client.py
+│   │   └── static_trajectory_eval.py
+│   ├── model_training/
 │   │   └── train_act_with_lerobot.py
-│   └── debug/                    # 调试工具
+│   └── debug/
+│       └── check_installation.py
 ├── tasks/
-│   └── franka/                   # 自定义 IsaacLab 环境
-│       ├── place_bin_ik_rel_env_cfg.py   # ⭐ 核心自定义环境（Place-Bin）
-│       └── ...                           # 其他 IsaacLab 模板环境（Stack/Lift等）
-├── configs/                      # 推理配置示例
+│   └── franka/
+│       ├── place_bin_ik_rel_env_cfg.py   # ⭐ Core custom environment
+│       └── ...                           # Other IsaacLab template tasks
+├── configs/
 │   ├── gr00t_place_bin.yaml
 │   └── act_place_bin.yaml
-├── docs/                         # 详细文档
+├── docs/
+├── requirements-isaac.txt
+├── requirements-gr00t.txt
+├── requirements-train.txt
 ├── pyproject.toml
 ├── Makefile
 └── README.md
 ```
 
-## 自定义任务环境
+## Custom Task Environment
 
-本项目的**核心自定义环境**是 `Isaac-Place-Bin-Franka-IK-Rel-v0`，在 `tasks/franka/place_bin_ik_rel_env_cfg.py` 中定义：
+The **core custom environment** of this project is `Isaac-Place-Bin-Franka-IK-Rel-v0`, defined in `tasks/franka/place_bin_ik_rel_env_cfg.py`:
 
-| 任务 ID | 说明 | 控制方式 |
+| Task ID | Description | Control |
 |---|---|---|
-| `Isaac-Place-Bin-Franka-IK-Rel-v0` | 放方块到篮子 | IK 相对控制 |
+| `Isaac-Place-Bin-Franka-IK-Rel-v0` | Pick up cubes and place them into a blue sorting bin | IK relative pose |
 
-该环境在 IsaacLab 标准模板基础上做了以下扩展：
-- 三摄像头观测（table_cam, table_cam_side, wrist_cam）
-- EEF 位姿、夹爪状态、关节位置观测
-- 无终止条件（便于数据采集和推理评估）
-- 支持 Mimic 子任务标注（grasp / lift / place）
+Extensions over the IsaacLab standard template:
+- Three camera observations (table_cam, table_cam_side, wrist_cam)
+- EEF pose, gripper state, and joint position observations
+- No termination conditions (for data collection and inference evaluation)
+- Mimic subtask annotation support (grasp / lift / place)
 
-> `tasks/franka/` 下还包含其他来自 IsaacLab 模板的环境（Stack、Lift 等），如需使用可直接注册，但本项目所有脚本默认仅使用 **Place-Bin** 环境。
+> `tasks/franka/` also contains other IsaacLab template environments (Stack, Lift, etc.). They can be registered if needed, but all scripts in this repo default to the **Place-Bin** environment only.
 
-## 常见问题
+## FAQ
 
 ### 1. `ModuleNotFoundError: No module named 'gr00t'`
 
-GR00T 未安装。安装方式见上文 [安装 GR00T-N1.5](#3-安装-gr00t-n15可选如需-gr00t-推理)。
+GR00T is not installed. See [Install GR00T-N1.5](#env-b--gr00t-inference-server) above.
 
-### 2. 图像方向与训练时不一致
+### 2. Image orientation mismatch between training and inference
 
-Isaac Sim 实时渲染的图像可能与训练视频存在水平镜像差异。推理脚本中已经默认进行了水平翻转（`img[:, ::-1, :]`）。如果训练数据本身已经翻转过，可以禁用：
+Isaac Sim live rendering may produce horizontally mirrored images compared to training videos. The inference scripts apply a horizontal flip by default (`img[:, ::-1, :]`). If your training data was already flipped, disable it:
 
 ```bash
 python scripts/inference/gr00t_remote_client.py --no-flip
 ```
 
-### 3. 动作输出接近 0
+### 3. Action output near zero
 
-ACT 的 temporal ensemble 可能导致动作塌陷。推理脚本中已禁用 temporal ensemble，改用 action queue。如需调整，可修改 `n_action_steps` 参数：
+ACT's temporal ensemble can cause action collapse. Our inference scripts disable temporal ensemble and use action queue. Adjust `n_action_steps` if needed:
 
 ```bash
 python scripts/inference/inference_act_isaaclab.py --n-action-steps 10
 ```
 
-### 4. GR00T 和 IsaacLab 环境冲突
+### 4. GR00T and IsaacLab dependency conflicts
 
-GR00T 依赖的 transformers / torch 版本可能与 IsaacLab 不兼容。推荐方案：
-- 使用远程推理架构（`gr00t_remote_client.py` + `inference_service.py`）
-- 或分别创建 conda 环境
+GR00T requires different `transformers` / `torch` versions than IsaacLab. Solutions:
+- Use remote inference (`gr00t_remote_client.py` + `inference_service.py`)
+- Or maintain separate conda environments
 
-## 许可证
+## License
 
-本项目采用 [MIT License](LICENSE) 开源。
+This project is licensed under the [MIT License](LICENSE).
 
-项目中使用的第三方库：
+Third-party libraries used:
 - [IsaacLab](https://github.com/isaac-sim/IsaacLab) - BSD-3-Clause
 - [LeRobot](https://github.com/huggingface/lerobot) - Apache-2.0
-- [GR00T-N1.5](https://github.com/NVIDIA/GR00T) - 请参考官方许可证
-
-## 致谢
-
-- [IsaacLab](https://github.com/isaac-sim/IsaacLab) - NVIDIA 的机器人学习框架
-- [LeRobot](https://github.com/huggingface/lerobot) - Hugging Face 的机器人学习库
-- [GR00T-N1.5](https://github.com/NVIDIA/GR00T) - NVIDIA 的通用人形机器人 VLA 模型
+- [GR00T-N1.5](https://github.com/NVIDIA/GR00T) - Refer to official license
