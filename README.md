@@ -23,8 +23,7 @@
   - 支持 **GR00T 远程推理**（ZMQ 服务解耦，避免 CUDA 冲突）
 
 - 🎯 **自定义 IsaacLab 环境**
-  - Place-Bin（放方块到篮子）
-  - Stack-Cube（方块堆叠）
+  - **Place-Bin**（放方块到篮子）— 核心自定义环境，含三摄像头配置
   - 多摄像头配置（Table Cam / Side Cam / Wrist Cam）
   - 支持键盘遥操作
 
@@ -253,8 +252,8 @@ python scripts/inference_service.py \
 **Terminal 2 - 启动 IsaacLab 客户端：**
 
 ```bash
-# 在 isaaclab 环境中
-conda activate isaaclab
+# 在 isaac 环境中
+conda activate isaac
 cd vla-franka-isaaclab
 python scripts/inference/gr00t_remote_client.py \
     --server-host localhost \
@@ -283,9 +282,8 @@ vla-franka-isaaclab/
 │   └── debug/                    # 调试工具
 ├── tasks/
 │   └── franka/                   # 自定义 IsaacLab 环境
-│       ├── place_bin_ik_rel_env_cfg.py
-│       ├── stack_ik_rel_env_cfg.py
-│       └── ...
+│       ├── place_bin_ik_rel_env_cfg.py   # ⭐ 核心自定义环境（Place-Bin）
+│       └── ...                           # 其他 IsaacLab 模板环境（Stack/Lift等）
 ├── configs/                      # 推理配置示例
 │   ├── gr00t_place_bin.yaml
 │   └── act_place_bin.yaml
@@ -297,18 +295,19 @@ vla-franka-isaaclab/
 
 ## 自定义任务环境
 
-本仓库提供了多个 Franka 任务环境配置，均在 `tasks/franka/` 下注册到 Gymnasium：
+本项目的**核心自定义环境**是 `Isaac-Place-Bin-Franka-IK-Rel-v0`，在 `tasks/franka/place_bin_ik_rel_env_cfg.py` 中定义：
 
 | 任务 ID | 说明 | 控制方式 |
 |---|---|---|
 | `Isaac-Place-Bin-Franka-IK-Rel-v0` | 放方块到篮子 | IK 相对控制 |
-| `Isaac-Stack-Cube-Franka-IK-Rel-v0` | 方块堆叠 | IK 相对控制 |
-| `Isaac-Lift-Cube-Franka-IK-Rel-v0` | 抓取方块 | IK 相对控制 |
 
-环境配置继承自 IsaacLab 标准模板，添加了：
+该环境在 IsaacLab 标准模板基础上做了以下扩展：
 - 三摄像头观测（table_cam, table_cam_side, wrist_cam）
 - EEF 位姿、夹爪状态、关节位置观测
 - 无终止条件（便于数据采集和推理评估）
+- 支持 Mimic 子任务标注（grasp / lift / place）
+
+> `tasks/franka/` 下还包含其他来自 IsaacLab 模板的环境（Stack、Lift 等），如需使用可直接注册，但本项目所有脚本默认仅使用 **Place-Bin** 环境。
 
 ## 常见问题
 

@@ -14,7 +14,7 @@ GR00T-N1.5 依赖的 `transformers`、`torch` 等库版本可能与 IsaacLab 的
 ```
 +-------------------+     ZMQ (TCP)      +-------------------+
 |  GR00T Server     | <----------------> |  IsaacLab Client  |
-|  (gr00t env)      |   observation      |  (isaaclab env)   |
+|  (gr00t env)      |   observation      |  (isaac env)      |
 |  GPU: CUDA 12.1   |   action           |  GPU: CUDA 12.4   |
 |  transformers 4.45|                    |  transformers 4.38|
 +-------------------+                    +-------------------+
@@ -44,10 +44,10 @@ python scripts/inference_service.py \
 
 ## 客户端启动
 
-在 `isaaclab` conda 环境中运行仿真客户端：
+在 `isaac` conda 环境中运行仿真客户端：
 
 ```bash
-conda activate isaaclab
+conda activate isaac
 cd vla-franka-isaaclab
 
 python scripts/inference/gr00t_remote_client.py \
