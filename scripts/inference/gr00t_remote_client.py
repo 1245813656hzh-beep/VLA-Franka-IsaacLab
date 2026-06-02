@@ -5,7 +5,18 @@ GR00T-N1.5 Remote Inference Client for Isaac Sim
 This script runs in the `isaac` environment (with IsaacLab) and connects
 to a GR00T inference server running in the `isaac_gr00t` environment via ZMQ.
 
-Usage:
+Architecture:
+    Terminal 1 (isaac_gr00t)          Terminal 2 (isaac)
+    ┌──────────────────────┐          ┌──────────────────────────┐
+    │  inference_service   │ ◄─ ZMQ ──┤  gr00t_remote_client.py  │
+    │  (GR00T model)       │          │  (IsaacLab + Franka env) │
+    └──────────────────────┘          └──────────────────────────┘
+
+Prerequisites:
+    # (1) GR00T model checkpoint (e.g., pretrained_models/gr00t_place_bin)
+    # (2) IsaacLab + GR00T inference dependencies in their respective conda envs
+
+Quick Start:
     # Terminal 1 (isaac_gr00t environment):
     conda activate isaac_gr00t
     cd $GR00T_PATH
@@ -20,10 +31,60 @@ Usage:
         --server-host localhost \
         --server-port 5555 \
         --num-episodes 3 \
-        --headless
+        --headless --save-video --no-flip --episode-length 800
 
-Dependencies (isaac environment):
+Dependencies:
+    # isaac environment:
     pip install zmq msgpack numpy
+
+Task Descriptions (--task-description):
+    # Single cube pick-and-place:
+    "pick up the green cube and place it into the blue bin"
+    "pick up the red cube and place it into the blue bin"
+    # Multi-cube sequential stacking:
+    "pick up the blue, red and green cubes in order and stack them in the blue bin"
+
+Key Arguments (gr00t_remote_client.py):
+    --task              IsaacLab task name (default: Isaac-Place-Bin-Franka-IK-Rel-v0)
+    --server-host       GR00T server hostname (default: localhost)
+    --server-port       GR00T server port (default: 5555)
+    --headless          Run Isaac Sim without GUI
+    --num-episodes      Number of evaluation episodes (default: 1)
+    --episode-length    Max steps per episode (default: 300)
+    --num-envs          Number of parallel environments (default: 1)
+    --seed              Random seed (default: 1000)
+    --save-video        Save camera videos per episode
+    --output-dir        Video output directory (default: ./outputs/GR00T)
+    --no-flip           Disable horizontal image flip (use when training data was NOT flipped)
+    --action-horizon    GR00T action chunk size — smaller = more frequent re-planning (default: 4)
+    --action-smoothing  EMA smoothing factor 0.0–0.9 (default: 0.3)
+    --task-description  Language instruction for policy conditioning
+    --verbose           Enable per-step debug logging
+
+Advanced Usage Examples:
+    # (A) Interactive debugging with GUI and verbose logging:
+    python scripts/inference/gr00t_remote_client.py \
+        --server-host localhost --server-port 5555 \
+        --num-episodes 1 --episode-length 200 \
+        --action-horizon 4 --verbose
+
+    # (B) Headless evaluation with video recording (low smoothing for precision):
+    python scripts/inference/gr00t_remote_client.py \
+        --server-host localhost --server-port 5555 \
+        --num-episodes 10 --episode-length 800 \
+        --headless --save-video --no-flip \
+        --action-horizon 4 --action-smoothing 0.1
+
+    # (C) Multi-cube stacking task:
+    python scripts/inference/gr00t_remote_client.py \
+        --server-host localhost --server-port 5555 \
+        --task-description "pick up the blue, red and green cubes in order and stack them in the blue bin" \
+        --headless --save-video --no-flip --episode-length 1200
+
+    # (D) Remote server:
+    python scripts/inference/gr00t_remote_client.py \
+        --server-host 10.0.0.100 --server-port 5555 \
+        --headless --save-video --num-episodes 5
 """
 
 import argparse
