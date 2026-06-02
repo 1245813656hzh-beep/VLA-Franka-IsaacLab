@@ -11,6 +11,18 @@ A VLA (Vision-Language-Action) data collection and inference toolkit for the Fra
   <b>Data Collection → Training → Inference</b>
 </p>
 
+## Demo — Blue, Red & Green Cube Stacking
+
+<p align="center">
+  <video src="blue_red_green/ep002_table_cam.mp4" controls muted width="32%"></video>
+  <video src="blue_red_green/ep002_table_cam_side.mp4" controls muted width="32%"></video>
+  <video src="blue_red_green/ep002_wrist_cam.mp4" controls muted width="32%"></video>
+</p>
+
+<p align="center">
+  <sub><b>Left:</b> Table Cam (front) &nbsp;|&nbsp; <b>Middle:</b> Side Cam &nbsp;|&nbsp; <b>Right:</b> Wrist Cam</sub>
+</p>
+
 ## Features
 
 - 🤖 **Automated Data Collection**

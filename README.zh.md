@@ -11,6 +11,18 @@
   <b>数据采集 → 模型训练 → 推理部署</b>
 </p>
 
+## 演示 — 蓝、红、绿三色方块堆叠
+
+<p align="center">
+  <video src="blue_red_green/ep002_table_cam.mp4" controls muted width="32%"></video>
+  <video src="blue_red_green/ep002_table_cam_side.mp4" controls muted width="32%"></video>
+  <video src="blue_red_green/ep002_wrist_cam.mp4" controls muted width="32%"></video>
+</p>
+
+<p align="center">
+  <sub><b>左：</b>桌面视角（正面）&nbsp;|&nbsp; <b>中：</b>侧面视角 &nbsp;|&nbsp; <b>右：</b>腕部视角</sub>
+</p>
+
 ## 功能特性
 
 - 🤖 **自动化数据采集**
