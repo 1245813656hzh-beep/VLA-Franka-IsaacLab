@@ -2,40 +2,30 @@
 """
 GR00T-N1.5 Order Generalization Evaluation Script (Remote Client Mode)
 
-Evaluates the model's ability to follow different color ordering instructions.
-Connects to a GR00T inference server via ZMQ (runs in isaac_gr00t env).
+Evaluates the model's ability to follow different color ordering instructions
+across all 6 permutations of {blue, red, green}. Connects to a GR00T inference
+server via ZMQ (runs in isaac_gr00t env).
 
-Prerequisites:
+Usage:
     # Terminal 1 (isaac_gr00t environment):
     conda activate isaac_gr00t
-    cd /home/intern/vla-arm-deployment/model/GR00T-N1.5
+    cd $GR00T_PATH
     python scripts/inference_service.py \
-        --model-path /home/intern/vla-arm-deployment/model/GR00T-N1.5/output/Franka/Long_task_501 \
-        --server --port 5555 \
-        --embodiment-tag new_embodiment \
-        --data-config gr00t.config.franka_config:FrankaDataConfig
+        --model-path ./pretrained_models/gr00t_place_bin \
+        --server --port 5555
 
     # Terminal 2 (isaac environment):
     conda activate isaac
-    cd /home/intern/vla-arm-deployment
+    cd VLA-Franka-IsaacLab
     python scripts/inference/eval_gr00t_order_generalization.py \
         --server-host localhost \
         --server-port 5555 \
-        --episodes_per_order 10 \
-        --episode_length 800 \
+        --episodes-per-order 10 \
+        --episode-length 800 \
         --headless \
-        --save_video
-
-Usage:
-    python scripts/inference/eval_gr00t_order_generalization.py \
-      --server-host localhost \
-      --server-port 5555 \
-      --episodes-per-order 10 \
-      --episode-length 800 \
-      --headless \
-      --save-video \
-      --output-dir /home/intern/vla-arm-deployment/outputs/order_eval \
-      --seed 1000
+        --save-video \
+        --output-dir ./outputs/order_eval \
+        --seed 1000
 """
 
 import argparse
@@ -597,7 +587,7 @@ def parse_args():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="/home/intern/vla-arm-deployment/outputs/order_eval",
+        default="./outputs/order_eval",
     )
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument(
