@@ -14,9 +14,9 @@
 ## 演示 — 蓝、红、绿三色方块堆叠
 
 <p align="center">
-  <video src="blue_red_green/ep002_table_cam.mp4" controls muted width="32%"></video>
-  <video src="blue_red_green/ep002_table_cam_side.mp4" controls muted width="32%"></video>
-  <video src="blue_red_green/ep002_wrist_cam.mp4" controls muted width="32%"></video>
+  <img src="blue_red_green/ep002_table_cam.gif" width="32%" />
+  <img src="blue_red_green/ep002_table_cam_side.gif" width="32%" />
+  <img src="blue_red_green/ep002_wrist_cam.gif" width="32%" />
 </p>
 
 <p align="center">
