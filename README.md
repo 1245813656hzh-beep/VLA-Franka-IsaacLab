@@ -32,9 +32,9 @@ A VLA (Vision-Language-Action) data collection and inference toolkit for the Fra
   - Built-in closed-loop controller with success checking
 
 - 🧠 **VLA Model Inference**
-  - **GR00T-N1.5** (NVIDIA) local inference
+  - **GR00T-N1.5** remote inference via ZMQ (decouples model server from simulation)
   - **ACT** (Action Chunking Transformer) local inference
-  - **GR00T remote inference** via ZMQ (decouples model server from simulation)
+  - Order generalization evaluation across all 6 color permutations
 
 - 🎯 **Custom IsaacLab Environment**
   - **Place-Bin** task — place scattered cubes into a blue sorting bin
@@ -200,16 +200,6 @@ python scripts/model_training/train_act_with_lerobot.py \
 
 ### VLA Inference
 
-#### GR00T-N1.5 local inference
-
-```bash
-python scripts/inference/inference_gr00t_isaaclab.py \
-    --model_path ./pretrained_models/gr00t_place_bin \
-    --num_episodes 5 \
-    --save_video \
-    --headless
-```
-
 #### ACT local inference
 
 ```bash
@@ -257,9 +247,9 @@ VLA-Franka-IsaacLab/
 │   │   ├── auto_collect_stack.py
 │   │   └── record_demos.py
 │   ├── inference/
-│   │   ├── inference_gr00t_isaaclab.py
 │   │   ├── inference_act_isaaclab.py
 │   │   ├── gr00t_remote_client.py
+│   │   ├── eval_gr00t_order_generalization.py
 │   │   └── static_trajectory_eval.py
 │   ├── model_training/
 │   │   └── train_act_with_lerobot.py
@@ -330,6 +320,41 @@ GR00T requires different `transformers` / `torch` versions than IsaacLab. Soluti
 We evaluate GR00T-N1.5's ability to follow color ordering instructions beyond its single training order (`blue → red → green`). The model is tested on all 6 permutations of {blue, red, green} (10 episodes each, 800 steps).
 
 **Evaluation script**: `scripts/inference/eval_gr00t_order_generalization.py`
+
+### Usage
+
+```bash
+# Terminal 1 — Start GR00T server:
+conda activate isaac_gr00t
+cd $GR00T_PATH
+python scripts/inference_service.py \
+    --model-path ./pretrained_models/gr00t_place_bin \
+    --server --port 5555
+
+# Terminal 2 — Run evaluation:
+conda activate isaac
+cd VLA-Franka-IsaacLab
+python scripts/inference/eval_gr00t_order_generalization.py \
+    --server-host localhost \
+    --server-port 5555 \
+    --episodes-per-order 10 \
+    --episode-length 800 \
+    --headless \
+    --save-video \
+    --output-dir ./outputs/order_eval \
+    --seed 1000
+```
+
+Key arguments:
+| Argument | Default | Description |
+|---|---|---|
+| `--episodes-per-order` | 10 | Episodes per color permutation |
+| `--episode-length` | 800 | Max steps per episode |
+| `--orders` | `all` | Which orders to test: `all` or `blue,red,green;red,blue,green` |
+| `--save-video` | off | Save per-episode videos |
+| `--output-dir` | `./outputs/order_eval` | Output directory for videos, keyframes, CSV, and JSON results |
+
+Output per run: `order_eval_summary.txt`, `order_eval_results.json`, `order_eval_episodes.csv`, `keyframes/`, and per-episode `videos/`.
 
 ### Results
 

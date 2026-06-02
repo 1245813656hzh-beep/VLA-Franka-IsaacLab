@@ -32,9 +32,9 @@
   - 内置闭环控制器，自动判断成功率
 
 - 🧠 **VLA 模型推理**
-  - 支持 **GR00T-N1.5** (NVIDIA) 本地推理
+  - 支持 **GR00T-N1.5** 远程推理（ZMQ 服务解耦，避免 CUDA 冲突）
   - 支持 **ACT** (Action Chunking Transformer) 本地推理
-  - 支持 **GR00T 远程推理**（ZMQ 服务解耦，避免 CUDA 冲突）
+  - 支持 6 种颜色排列的顺序泛化能力评估
 
 - 🎯 **自定义 IsaacLab 环境**
   - **Place-Bin**（放方块到篮子）— 核心自定义环境
@@ -200,16 +200,6 @@ python scripts/model_training/train_act_with_lerobot.py \
 
 ### VLA 模型推理
 
-#### GR00T-N1.5 本地推理
-
-```bash
-python scripts/inference/inference_gr00t_isaaclab.py \
-    --model_path ./pretrained_models/gr00t_place_bin \
-    --num_episodes 5 \
-    --save_video \
-    --headless
-```
-
 #### ACT 本地推理
 
 ```bash
@@ -259,9 +249,9 @@ VLA-Franka-IsaacLab/
 │   │   ├── auto_collect_stack.py     # 堆叠自动采集
 │   │   └── record_demos.py           # 人工遥操作采集
 │   ├── inference/                # 推理脚本
-│   │   ├── inference_gr00t_isaaclab.py   # GR00T 本地推理
 │   │   ├── inference_act_isaaclab.py     # ACT 本地推理
 │   │   ├── gr00t_remote_client.py        # GR00T 远程客户端
+│   │   ├── eval_gr00t_order_generalization.py  # 顺序泛化评估
 │   │   └── static_trajectory_eval.py     # 静态轨迹评估
 │   ├── model_training/           # 训练脚本
 │   │   └── train_act_with_lerobot.py
@@ -332,6 +322,41 @@ GR00T 依赖的 transformers / torch 版本可能与 IsaacLab 不兼容。推荐
 我们评估了 GR00T-N1.5 在单一训练顺序（`blue → red → green`）之外的指令遵循能力。模型在所有 6 种 {蓝, 红, 绿} 排列上进行了测试（每种 10 个 episode，800 步）。
 
 **评估脚本**: `scripts/inference/eval_gr00t_order_generalization.py`
+
+### 使用方法
+
+```bash
+# Terminal 1 — 启动 GR00T 推理服务：
+conda activate isaac_gr00t
+cd $GR00T_PATH
+python scripts/inference_service.py \
+    --model-path ./pretrained_models/gr00t_place_bin \
+    --server --port 5555
+
+# Terminal 2 — 运行评估：
+conda activate isaac
+cd VLA-Franka-IsaacLab
+python scripts/inference/eval_gr00t_order_generalization.py \
+    --server-host localhost \
+    --server-port 5555 \
+    --episodes-per-order 10 \
+    --episode-length 800 \
+    --headless \
+    --save-video \
+    --output-dir ./outputs/order_eval \
+    --seed 1000
+```
+
+参数说明：
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `--episodes-per-order` | 10 | 每种颜色排列的测试 episode 数 |
+| `--episode-length` | 800 | 每个 episode 的最大步数 |
+| `--orders` | `all` | 测试哪些顺序：`all` 或 `blue,red,green;red,blue,green` |
+| `--save-video` | 关闭 | 保存每个 episode 的视频 |
+| `--output-dir` | `./outputs/order_eval` | 输出目录（包含视频、关键帧、CSV 和 JSON 结果） |
+
+输出文件包括：`order_eval_summary.txt`、`order_eval_results.json`、`order_eval_episodes.csv`、`keyframes/` 关键帧截图以及 `videos/` 录屏。
 
 ### 实验结果
 
