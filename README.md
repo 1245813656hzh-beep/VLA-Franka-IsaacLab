@@ -325,6 +325,37 @@ GR00T requires different `transformers` / `torch` versions than IsaacLab. Soluti
 - Use remote inference (`gr00t_remote_client.py` + `inference_service.py`)
 - Or maintain separate conda environments
 
+## Order Generalization Evaluation
+
+We evaluate GR00T-N1.5's ability to follow color ordering instructions beyond its single training order (`blue → red → green`). The model is tested on all 6 permutations of {blue, red, green} (10 episodes each, 800 steps).
+
+**Evaluation script**: `scripts/inference/eval_gr00t_order_generalization.py`
+
+### Results
+
+| Order | Order Correct | Stack Success | Color Correct |
+|---|---|---|---|
+| blue → red → green **(train)** | 10/10 (100%) | 10/10 (100%) | 10/10 (100%) |
+| red → blue → green | 10/10 (100%) | 9/10 (90%) | 10/10 (100%) |
+| green → red → blue | 9/10 (90%) | 9/10 (90%) | 10/10 (100%) |
+| red → green → blue | 5/10 (50%) | 8/10 (80%) | 7/10 (70%) |
+| green → blue → red | 2/10 (20%) | 5/10 (50%) | 6/10 (60%) |
+| blue → green → red | 0/10 (0%) | 10/10 (100%) | 0/10 (0%) |
+| **Average** | **36/60 (60%)** | **51/60 (85%)** | **43/60 (72%)** |
+
+### Key Findings
+
+1. **Default-training-mode trap**: When the prompt starts with `blue` (matching the training order), the model blindly executes the training sequence `blue → red → green`, completely ignoring the prompt. `blue → green → red` achieves 0% order accuracy despite the model successfully stacking all 3 cubes — it followed the training order instead.
+
+2. **Two learned priors, not full order semantics**: The model learned **"G is last"** (strongest prior) and **"R is second"** (secondary prior). When both priors hold (as in `red → blue → green`) → 100%; when both break (as in `blue → green → red`) → 0%.
+
+3. **Skill vs. understanding gap**: Stack success (85%) >> Order accuracy (60%), indicating that the bottleneck is not manipulation skill but the ability to map language instructions to action sequences. The model needs more diverse order training data.
+
+> **Metric definitions** (see `scripts/inference/eval_gr00t_order_generalization.py` for implementation):
+> - **Order Correct**: All 3 cubes grasped in exactly the prompted order
+> - **Stack Success**: All 3 cubes placed and stacked in the bin (order irrelevant)
+> - **Color Correct**: No wrong-color grasp events occurred (allows partial completion)
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
